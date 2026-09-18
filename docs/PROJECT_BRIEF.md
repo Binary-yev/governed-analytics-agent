@@ -23,7 +23,7 @@ governance, and lineage the agent is forced to go through.
 
 | Source | Role |
 | --- | --- |
-| `bigquery-public-data.cms_medicare.physician_and_other_supplier` | Primary fact source |
+| `bigquery-public-data.cms_medicare.physicians_and_other_supplier_{2012..2015}` | Primary fact source |
 | `hospital_general_info` | Quarterly enrichment |
 | `census_bureau_acs` | Geography enrichment |
 | NPPES weekly incremental (V2, `download.cms.gov/nppes/NPI_Files.html`) | Live source |
@@ -32,18 +32,20 @@ NPPES matters because CMS keeps no history. Accumulating weekly pulls builds a p
 change history that does not exist publicly — and it's the only source with real
 freshness semantics. The Medicare tables are static.
 
-**Grain:** one row per NPI × HCPCS × year.
+**Grain:** one row per NPI × HCPCS × place of service, one table per year (2012–2015).
+The year lives in the table name, not a column — staging adds it when unioning.
 
 **Models:** `fct_physician_services`, `dim_provider` (NPI hashed), `dim_hcpcs`,
 `dim_geography`, `dim_hospital`.
 
 ## The key technical point
 
-Source values like `avg_submitted_chrg` are **already averages**. Therefore:
+Source values like `average_submitted_chrg_amt` are **already averages**. Therefore:
 
 ```sql
 payment_to_charge_ratio =
-  SUM(avg_medicare_payment * srvc_cnt) / SUM(avg_submitted_chrg * srvc_cnt)
+  SUM(average_medicare_payment_amt * line_srvc_cnt)
+    / SUM(average_submitted_chrg_amt * line_srvc_cnt)
 ```
 
 The naive `AVG(...) / AVG(...)` is the exact error an unconstrained agent makes. That is
@@ -82,5 +84,7 @@ failure taxonomy is the writeup.
 
 ## Open questions — verify before building
 
-- [ ] Which years does `physician_and_other_supplier` actually cover in the public dataset?
+- [x] Which years does the physician table cover in the public dataset? **2012–2015**, one
+  table per year (`physicians_and_other_supplier_YYYY`). Schemas drift: 2012 has `stdev_*`
+  columns, 2015 drops them and adds `average_medicare_standard_amt`.
 - [ ] Current BigQuery property-graph GQL syntax — the feature is new and syntax has moved.

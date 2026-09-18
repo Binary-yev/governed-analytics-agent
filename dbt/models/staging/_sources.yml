@@ -6,13 +6,20 @@ sources:
     schema: cms_medicare
     description: >
       Public CMS Medicare utilization and payment data. Static — no freshness contract.
-      Values prefixed `avg_` are already averages at the NPI x HCPCS x year grain, so any
-      ratio over them must be weighted by `line_srvc_cnt`.
+      Columns prefixed `average_` are already averages at the NPI x HCPCS x place-of-service
+      grain, so any ratio over them must be weighted by `line_srvc_cnt`.
     tables:
-      - name: physician_and_other_supplier_2014
-        description: Primary fact source. Grain is one row per NPI x HCPCS x year.
-        # TODO: confirm which years the public dataset actually exposes before
-        # committing to a union / incremental strategy.
+      # One table per year; the year is only in the table name. Schemas drift across
+      # years (2012 has stdev_* columns; 2015 drops them, adds average_medicare_standard_amt),
+      # so staging unions on an explicit column list.
+      - name: physicians_and_other_supplier_2012
+        description: Primary fact source. One row per NPI x HCPCS x place of service.
+      - name: physicians_and_other_supplier_2013
+        description: Primary fact source. One row per NPI x HCPCS x place of service.
+      - name: physicians_and_other_supplier_2014
+        description: Primary fact source. One row per NPI x HCPCS x place of service.
+      - name: physicians_and_other_supplier_2015
+        description: Primary fact source. One row per NPI x HCPCS x place of service.
 
   - name: cms_hospital
     database: bigquery-public-data

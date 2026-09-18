@@ -11,16 +11,18 @@ MCP server that lets an agent answer questions it can *prove* are right.
 Every enterprise is pointing an LLM at a warehouse and getting confidently wrong numbers.
 The failure isn't hallucinated text — it's plausible SQL over misunderstood columns.
 
-Worked example from this project's data. `avg_submitted_chrg` and `avg_medicare_payment`
-in the CMS Medicare tables are **already averages**, one row per NPI × HCPCS × year. So a
-payment-to-charge ratio must be weighted by service count:
+Worked example from this project's data. `average_submitted_chrg_amt` and
+`average_medicare_payment_amt` in the CMS Medicare tables are **already averages**, one row
+per NPI × HCPCS × place of service, per year. So a payment-to-charge ratio must be weighted
+by service count:
 
 ```sql
 -- correct
-SUM(avg_medicare_payment * srvc_cnt) / SUM(avg_submitted_chrg * srvc_cnt)
+SUM(average_medicare_payment_amt * line_srvc_cnt)
+  / SUM(average_submitted_chrg_amt * line_srvc_cnt)
 
 -- what an unconstrained text-to-SQL agent writes
-AVG(avg_medicare_payment) / AVG(avg_submitted_chrg)
+AVG(average_medicare_payment_amt) / AVG(average_submitted_chrg_amt)
 ```
 
 Both run. Both return a number. One is wrong, and nothing in the response tells you which.
@@ -56,8 +58,8 @@ worse than a refusal, because the caller can't tell it happened.
 
 ## Data
 
-- `bigquery-public-data.cms_medicare.physician_and_other_supplier` — primary fact source.
-  Grain: one row per NPI × HCPCS × year.
+- `bigquery-public-data.cms_medicare.physicians_and_other_supplier_{2012..2015}` — primary
+  fact source. One table per year; grain is one row per NPI × HCPCS × place of service.
 - `hospital_general_info` (quarterly) and `census_bureau_acs` — enrichment.
 - **NPPES weekly incremental** (V2, from `download.cms.gov/nppes/NPI_Files.html`) — the live
   source. CMS keeps no history, so accumulating weekly pulls builds a provider change
