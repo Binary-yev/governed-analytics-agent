@@ -1,0 +1,32 @@
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/.user.yml
+profiles.yml
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.python-version
+
+# credentials — never commit service account keys
+*.json.key
+service-account*.json
+keyfile*.json
+
+# data — raw NPPES pulls are large and reproducible
+data/raw/
+data/nppes/
+*.csv
+*.parquet
+*.zip
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

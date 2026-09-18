@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: cms_medicare
+    database: bigquery-public-data
+    schema: cms_medicare
+    description: >
+      Public CMS Medicare utilization and payment data. Static — no freshness contract.
+      Values prefixed `avg_` are already averages at the NPI x HCPCS x year grain, so any
+      ratio over them must be weighted by `line_srvc_cnt`.
+    tables:
+      - name: physician_and_other_supplier_2014
+        description: Primary fact source. Grain is one row per NPI x HCPCS x year.
+        # TODO: confirm which years the public dataset actually exposes before
+        # committing to a union / incremental strategy.
+
+  - name: cms_hospital
+    database: bigquery-public-data
+    schema: cms_medicare
+    tables:
+      - name: hospital_general_info
+        description: Quarterly hospital enrichment.

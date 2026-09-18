@@ -1,0 +1,15 @@
+# Warehouse + semantic layer
+dbt-core~=1.9
+dbt-bigquery~=1.9
+dbt-metricflow[bigquery]~=0.8
+
+# MCP server
+mcp~=1.2
+
+# Agent
+google-adk~=1.0
+
+# Ingest / tooling
+google-cloud-bigquery~=3.27
+requests~=2.32
+pydantic~=2.10

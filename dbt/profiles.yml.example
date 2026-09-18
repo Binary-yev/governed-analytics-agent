@@ -1,0 +1,14 @@
+# Copy to ~/.dbt/profiles.yml (or set DBT_PROFILES_DIR) and fill in.
+# Never commit the real file — it is gitignored.
+governed_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth          # `gcloud auth application-default login`
+      project: YOUR_GCP_PROJECT
+      dataset: governed_analytics_dev
+      location: US
+      threads: 4
+      job_execution_timeout_seconds: 600
+      priority: interactive
